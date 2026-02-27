@@ -1,0 +1,11 @@
+### REFERENCE EXEMPLARS (TOP-K RETRIEVED)
+The following code snippets are historical bug fixes retrieved from the knowledge base. They were selected based on high **structural and semantic similarity** to the current buggy code.
+
+==================================================
+{examples}
+==================================================
+
+### HOW TO USE THESE EXAMPLES
+1. **Focus on the Fix Pattern:** Observe exactly HOW the vulnerability was mitigated (e.g., adding a specific upper-bound check, changing an API call, type-casting a variable).
+2. **Ignore Specific Names:** The examples use different variable names, function names, and contexts. **DO NOT copy them blindly.**
+3. **Adapt to Current Context:** Extract the *repair logic* from the examples and strictly adapt it to the variable names and context of the current Buggy Code.
