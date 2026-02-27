@@ -1,0 +1,95 @@
+# MV-BDSR Configuration
+
+# Paths
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  indices_dir: "data/indices"
+
+# Model configurations
+models:
+  llm:
+    provider: "openai"  # openai, anthropic, or local
+    model_name: "gpt-4o"  # 第三方API端点的自定义模型名
+    base_url: "https://chatapi.onechats.top/v1/"  # 使用你的自定义端点
+    temperature: 0.2
+    max_tokens: 8192  # 增加到 8192 以支持大文件的完整输出（~32K 字符）
+  
+  graphcodebert:
+    model_name: "microsoft/graphcodebert-base"
+    max_length: 512
+    batch_size: 16
+  
+  embeddings:
+    dimension: 768
+    model_name: "all-mpnet-base-v2"  # 不需要 sentence-transformers/ 前缀
+
+# Offline indexing
+offline:
+  multiview:
+    views: ["data_flow", "control_flow", "api_semantic"]
+    prompts:
+      data_flow: "prompts/offline/blind/data_flow.txt"
+      control_flow: "prompts/offline/blind/control_flow.txt"
+      api_semantic: "prompts/offline/blind/api_semantic.txt"
+  
+  distillation:
+    use_patch_refinement: true
+    quality_check_enabled: true  # Enable quality assessment before patch-guided refinement
+    distillation_model: "gpt-4o"
+    prompts:
+      without_patch: "prompts/offline/distill/without_patch.txt"
+      with_patch: "prompts/offline/distill/with_patch.txt"
+      quality_check: "prompts/offline/quality_check.txt"
+  
+  vector_store:
+    type: "faiss"  # faiss, chroma, or milvus
+    index_type: "IVFFlat"
+    nlist: 100
+
+# Online inference
+online:
+  phase1_diagnosis:
+    max_tool_calls: 3
+    tools:
+      - "data_flow_analyzer"
+      - "control_flow_analyzer"
+      - "reachability_checker"
+  
+  phase2_retrieval:
+    top_k_per_view: 2  # 从 3 降到 2（减少 33% 的 exemplar）
+    final_top_k: 2     # 从 3 降到 2（最终只保留 2 个最相关的样本）
+    reranking:
+      text_weight: 0.3
+      graphcodebert_weight: 0.7
+  
+  phase3_repair:
+    max_iterations: 5
+    validation:
+      compile_timeout: 30
+      test_timeout: 500
+      compiler: "gcc"
+      test_command: "make test"
+      execution_mode: "docker"  
+
+# Static analysis
+static_analysis:
+  joern:
+    enabled: true
+    server_url: "http://localhost:8080"
+  
+  treesitter:
+    enabled: true
+    languages: ["python", "go", "javascript", "c", "cpp", "java", "rust"]
+
+# Logging
+logging:
+  level: "DEBUG"  
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>"
+  log_file: "logs/mvbdsr.log"
+
+# Experiment settings
+experiment:
+  seed: 42
+  device: "cpu"  # cuda or cpu
+  num_workers: 4
