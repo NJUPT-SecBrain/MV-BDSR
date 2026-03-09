@@ -1,0 +1,78 @@
+You are a Senior Debugging Engineer. The security patch you generated in the previous step failed to pass validation. Your task is to analyze the error log and generate a CORRECTED version of the complete code.
+
+### CONTEXT & INPUTS
+1. **Original Vulnerability Logic:**
+   (Keep the security fix in mind. Do NOT remove security checks just to satisfy the compiler.)
+
+2. **Previous Patch Attempt:**
+{previous_patch}
+
+3. **Validation Error Log:**
+{error_log}
+
+4. **Size Constraint:**
+{size_hint}
+
+### DEBUGGING INSTRUCTIONS (Chain of Thought)
+You must strictly follow this debugging process before generating code:
+
+**Step 1: Error Analysis**
+- Identify the specific error type (e.g., "Syntax Error", "Undefined Variable", "Logic Assertion Failed").
+- Locate the exact line number in "Previous Patch Attempt" that caused the error.
+- Explain WHY it failed (e.g., "I used 'length' but the struct member is named 'len'").
+
+**Step 2: Correction Strategy**
+- If the error is **"Generated code is incomplete / Missing functions"**:
+  - Your previous output was TRUNCATED or INCOMPLETE. You omitted functions.
+  - The Size Constraint above tells you the MINIMUM number of characters and lines you must output.
+  - Go through the original Buggy Code function by function. Copy EVERY function EXACTLY as-is, EXCEPT the function(s) you need to fix.
+  - Do NOT stop writing until you have included every function listed in the "Missing functions" list from the error log.
+  - If needed, write the file in one continuous pass without stopping.
+- If it's a **Go/Rust/C Compilation Error: `X redeclared in this block`**:
+  - `X` is ALREADY DEFINED in another file in the same package.
+  - You MUST remove your own definition of `X` entirely. Do NOT define it yourself.
+  - The symbol exists in a sibling source file you cannot see. Just call it normally.
+- If it's a **Go/Rust Compilation Error: `not enough arguments in call to X`** or **`too many arguments in call to X`**:
+  - The function `X` in another file has a different signature from what you assumed.
+  - Read the compiler error carefully — it shows `have (...)` and `want (...)`.
+  - Adjust your CALL SITE to match the `want (...)` signature. Do NOT redefine `X`.
+- If it's a **Go Compilation Error: `undefined: X`** where you DID define `X` in a previous attempt:
+  - You defined `X` but then removed it in this attempt, OR the definition was in the wrong scope.
+  - Either add the correct definition back, or remove the call site if `X` should come from another file.
+- If it's a **Go Compilation Error: `invalid operation: X == nil (mismatched types ...Cache and untyped nil)`**:
+  - You changed the type of `X`. Restore the original type. Use the correct nil-check for that type (e.g., `var zero CacheType; cache == zero`).
+- If it's a **Compilation Error**: Fix the syntax or variable names. Check headers.
+- If it's a **Test Failure (Assertion)**: The logic is wrong. Re-read the logic carefully.
+- If the error is `ImportError: cannot import name 'X'` or `SyntaxError` at a `from __future__` line:
+  - `from __future__ import ...` MUST appear at the very top of the file, before any other code except the module docstring and `#!` shebang.
+  - Move it to the correct position.
+- If the error involves `TypeError: X is not a function` or `TypeError: Cannot read properties of undefined`: A variable name or import was changed/deleted. Restore it.
+- If the error is **Go Compilation: `"pkg" imported and not used`**:
+  - You added an import that is not used in the code. Remove the unused import line(s) entirely.
+- If the error is **Go Compilation: `found packages X (a.go) and Y (a_test.go)`**:
+  - The Go source file must declare `package X` (matching the package name of non-test files). Do NOT change the `package` declaration from what was in the original Buggy Code.
+- If the error is **Go Compilation: `assignment mismatch: 1 variable but X returns N values`**:
+  - The function `X` returns multiple values. Either capture all return values (e.g., `val, err := X(...)`) or use `_` to discard unwanted values (e.g., `val, _ := X(...)`). Do NOT change the function `X` itself.
+- If the error is **`syntax error: unexpected EOF`** or **`string literal not terminated`** or **`comment not terminated`**:
+  - Your output was TRUNCATED. The file is incomplete. Start over from the top and output the ENTIRE file without stopping. Pay special attention to closing all braces, parentheses, and string literals before the final `</FIXED_CODE>`.
+- **CRITICAL Constraint:** Ensure the original security fix (e.g., bounds check) remains intact. Do not delete the fix to silence the error.
+- **CRITICAL Constraint:** Do NOT truncate or omit ANY functions/methods from the original file. The output must contain ALL original functions plus your fix.
+- **CRITICAL Constraint (Go packages):** NEVER define a type, struct, const, or function that is NOT present in the Buggy Code above — they already exist in sibling files. Redefining them causes `redeclared` errors.
+- **CRITICAL Constraint:** Do NOT use a local parameter name that shadows an imported module.
+- **CRITICAL Constraint:** Do NOT change any user-facing error message strings, exception messages, or log message strings. Tests often assert exact message content.
+
+**Step 3: Code Generation**
+- Generate the COMPLETE corrected code — every function, class, and import must be present.
+- Do NOT use markdown code fences (``` or ```python). Output the raw code directly inside the XML tags.
+- Wrap the code inside <FIXED_CODE> tags.
+
+### OUTPUT FORMAT
+**MANDATORY:** Your response MUST start with `<FIXED_CODE>` immediately. Do NOT use markdown fences (no ``` backticks). The pipeline will DISCARD any response without `<FIXED_CODE>`.
+
+**WARNING:** Do NOT write `<DEBUG_THOUGHT>` or any analysis before the code. Every token spent on analysis is a token NOT spent on the code, and large files will be TRUNCATED if you waste tokens on preamble. If you need to reason, do it INTERNALLY (do not output it).
+
+<FIXED_CODE>
+[Insert the COMPLETE corrected source code here — no markdown fences, no explanatory text]
+</FIXED_CODE>
+
+REMINDER: The response MUST end with </FIXED_CODE>. Do NOT omit any function that was in the previous patch.
